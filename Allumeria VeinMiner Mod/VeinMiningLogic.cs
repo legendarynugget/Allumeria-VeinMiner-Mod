@@ -4,8 +4,10 @@ using Allumeria;
 using Allumeria.Audio;
 using Allumeria.Blocks.Blocks;
 using Allumeria.ChunkManagement;
+using Allumeria.DataManagement.Permissions;
 using Allumeria.EntitySystem.Entities;
 using Allumeria.Items;
+using Allumeria.Items.ItemTagTypes;
 using Allumeria.Networking;
 using Allumeria.Networking.Packets;
 using Allumeria.Particles;
@@ -17,6 +19,24 @@ namespace VeinMiner
     {
         [ThreadStatic]
         public static bool IsMiningVein = false;
+
+        public static bool CanPlayerMine(PlayerEntity player, Block block)
+        {
+            if (player == null || block == null) return false;
+            if (player.permissions != null && player.permissions.IsEnabled(PermissionRegistry.instant_break)) return true;
+
+            int toolTier = 0;
+            InventorySlot heldSlot = player.inventory?.inventory?.slots[World.selectedBlockIndex];
+            if (heldSlot != null && !heldSlot.IsEmpty())
+            {
+                if (heldSlot.itemStack.GetItem().GetTag(ItemTag.tool_tier, out ItemTagEntry entry))
+                {
+                    toolTier = entry.data;
+                }
+            }
+
+            return toolTier >= (int)block.blockMaterial.miningLevel;
+        }
 
         public static bool IsVeinMineable(Block? b)
         {
@@ -34,7 +54,7 @@ namespace VeinMiner
                 return true;
             }
 
-            // 3. Modded Ores
+            // 3. Modded Ores matching standard naming conventions
             if (!string.IsNullOrEmpty(b.strID))
             {
                 string id = b.strID.ToLowerInvariant();
@@ -68,7 +88,7 @@ namespace VeinMiner
                 int blocksMined = 0;
                 Block? originBlock = null;
 
-                // 26 adjacent neighbor offsets
+                // Precompute 26 3D neighbor offsets (Moore neighborhood)
                 List<Vector3i> neighborOffsets = new List<Vector3i>(26);
                 for (int dx = -1; dx <= 1; dx++)
                 {
@@ -86,7 +106,7 @@ namespace VeinMiner
                 {
                     Vector3i current = queue.Dequeue();
 
-                    // World boundary safety clamp
+                    // World bounds check
                     if (current.Y < 0 || current.Y > 255) continue;
 
                     int cx = current.X >> 5;
@@ -104,7 +124,7 @@ namespace VeinMiner
                         {
                             if (originBlock == null) originBlock = b;
 
-                            // 1. Remove block from the world
+                            // 1. Remove block and update lighting
                             chunkManager.SetBlockWithUpdateAndLight(current.X, current.Y, current.Z, Block.empty, 0U, true, false, false);
                             chunkManager.MarkNeighboursDirty(current.X, current.Y, current.Z);
                             modifiedChunks.Add(chunk);
@@ -112,10 +132,14 @@ namespace VeinMiner
                             // 2. Spawn particles
                             ParticleBehaviour.block_break.Burst(new Vector3((float)current.X, (float)current.Y, (float)current.Z), 8, b);
 
-                            // 3. Deliver drops directly into inventory
-                            DeliverDropsToPlayer(player, world, b);
+                            // 3. Deliver drops (Only in Singleplayer / Server Host)
+                            // In multiplayer client mode, the server drops loot upon receiving PacketPlayerBreakBlock
+                            if (!NetworkManager.IsClient())
+                            {
+                                DeliverDropsToPlayer(player, world, b);
+                            }
 
-                            // 4. Multiplayer server packet sync
+                            // 4. Send packet to server if playing on a multiplayer server
                             if (NetworkManager.IsClient())
                             {
                                 NetworkManager.client.SendPacketToServer(new PacketPlayerBreakBlock((short)current.X, (short)current.Y, (short)current.Z));
@@ -124,8 +148,8 @@ namespace VeinMiner
                             blocksMined++;
                         }
 
-                        // Search connected neighbors
-                        foreach (var offset in neighborOffsets)
+                        // Search neighbors
+                        foreach (Vector3i offset in neighborOffsets)
                         {
                             Vector3i next = current + offset;
                             if (next.Y >= 0 && next.Y <= 255 && !visited.Contains(next))
@@ -137,13 +161,13 @@ namespace VeinMiner
                     }
                 }
 
-                // Preserve all modified chunks
+                // Ensure chunk save flags are set
                 foreach (Chunk c in modifiedChunks)
                 {
                     c.preserveForUpgrade = true;
                 }
 
-                // Play audio once cleanly per vein
+                // Audio polish: Play break sound and scaled pop sound
                 if (blocksMined > 0)
                 {
                     if (originBlock?.blockMaterial?.breakSound != null)
@@ -153,7 +177,7 @@ namespace VeinMiner
 
                     if (AudioPlayer.pop != null)
                     {
-                        float pitch = Math.Clamp(1.0f + (blocksMined * 0.02f), 1.0f, 1.5f);
+                        float pitch = Math.Clamp(1.0f + (blocksMined * 0.015f), 1.0f, 1.6f);
                         AudioPlayer.PlaySoundWorld(AudioPlayer.pop, player.position, pitch, 0.8f);
                     }
                 }
@@ -202,8 +226,7 @@ namespace VeinMiner
         {
             if (player?.inventory?.inventory == null || stack == null) return;
 
-            ItemStack remainder;
-            player.GiveItem(stack, out remainder);
+            player.GiveItem(stack, out ItemStack remainder);
 
             if (remainder != null && remainder.amount > 0)
             {

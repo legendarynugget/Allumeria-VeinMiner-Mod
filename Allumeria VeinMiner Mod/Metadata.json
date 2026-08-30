@@ -3,7 +3,7 @@
   "id": "veinminer",
   "display_name": "Vein Miner",
   "description": "Mines entire connected ore veins while holding a keybind.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "assembly_relative_path": "VeinMiner.dll",
   "environment": "client",
   "entrypoints": [
@@ -15,5 +15,26 @@
       "role": "Author"
     }
   ],
-  "dependencies": []
+  "dependencies": [
+    {
+      "id": "allumeria",
+      "version": ">=0.15.1",
+      "type": "mandatory"
+    },
+    {
+      "id": "ignitron",
+      "version": ">=0.8.0",
+      "type": "mandatory"
+    },
+    {
+      "id": "aluminium",
+      "version": ">=0.2.0",
+      "type": "mandatory"
+    },
+    {
+      "id": "harmony",
+      "version": "*",
+      "type": "mandatory"
+    }
+  ]
 }
