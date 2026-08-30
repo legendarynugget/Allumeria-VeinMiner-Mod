@@ -8,9 +8,9 @@ An ore vein excavation mod for Allumeria on the Ignitron mod loader: https://cod
 * Supports all vanilla and modded ores.
 * Displays a `Vein Miner` indicator above your hotbar when holding the key.
 
-### Installation 
-1. Install the Ignitron mod loader https://codeberg.org/ignitron/ignitron
-2. Download `veinminer.zip` from the [Releases](releases) tab.
+### Installation
+1. Install the Ignitron mod loader: https://codeberg.org/ignitron/ignitron
+2. Download `veinminer.zip` from the [Releases](https://github.com/legendarynugget/Allumeria-VeinMiner-Mod/releases) tab.
 3. Extract the `veinminer` folder into your `Allumeria/mods/` directory.
 
 ### Directory Structure
