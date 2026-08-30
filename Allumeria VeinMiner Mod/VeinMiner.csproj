@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>latest</LangVersion>
+    <AllumeriaPath>F:\SteamLibrary\steamapps\common\Allumeria</AllumeriaPath>
+  </PropertyGroup>
+
+  <!-- Reference game and Ignitron libraries -->
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>$(AllumeriaPath)\mods\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Loader">
+      <HintPath>$(AllumeriaPath)\mods\Loader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Ignitron.Aluminium">
+      <HintPath>$(AllumeriaPath)\mods\Ignitron.Aluminium.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Allumeria">
+      <HintPath>$(AllumeriaPath)\Allumeria.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenTK.Mathematics">
+      <HintPath>$(AllumeriaPath)\OpenTK.Mathematics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenTK.Windowing.GraphicsLibraryFramework">
+      <HintPath>$(AllumeriaPath)\OpenTK.Windowing.GraphicsLibraryFramework.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Metadata.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

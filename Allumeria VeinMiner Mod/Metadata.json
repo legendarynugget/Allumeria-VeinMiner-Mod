@@ -1,0 +1,19 @@
+{
+  "schema_version": 2,
+  "id": "veinminer",
+  "display_name": "Vein Miner",
+  "description": "Mines entire connected ore veins while holding a keybind.",
+  "version": "1.0.0",
+  "assembly_relative_path": "VeinMiner.dll",
+  "environment": "client",
+  "entrypoints": [
+    "VeinMiner.VeinMinerMod"
+  ],
+  "contributors": [
+    {
+      "name": "LegendaryNugget",
+      "role": "Author"
+    }
+  ],
+  "dependencies": []
+}
