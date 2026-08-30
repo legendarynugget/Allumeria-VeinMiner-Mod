@@ -4,10 +4,8 @@ using Allumeria;
 using Allumeria.Audio;
 using Allumeria.Blocks.Blocks;
 using Allumeria.ChunkManagement;
-using Allumeria.DataManagement.Permissions;
 using Allumeria.EntitySystem.Entities;
 using Allumeria.Items;
-using Allumeria.Items.ItemTagTypes;
 using Allumeria.Networking;
 using Allumeria.Networking.Packets;
 using Allumeria.Particles;
@@ -19,24 +17,6 @@ namespace VeinMiner
     {
         [ThreadStatic]
         public static bool IsMiningVein = false;
-
-        public static bool CanPlayerMine(PlayerEntity player, Block block)
-        {
-            if (player == null || block == null) return false;
-            if (player.permissions != null && player.permissions.IsEnabled(PermissionRegistry.instant_break)) return true;
-
-            int toolTier = 0;
-            InventorySlot heldSlot = player.inventory?.inventory?.slots[World.selectedBlockIndex];
-            if (heldSlot != null && !heldSlot.IsEmpty())
-            {
-                if (heldSlot.itemStack.GetItem().GetTag(ItemTag.tool_tier, out ItemTagEntry entry))
-                {
-                    toolTier = entry.data;
-                }
-            }
-
-            return toolTier >= (int)block.blockMaterial.miningLevel;
-        }
 
         public static bool IsVeinMineable(Block? b)
         {
@@ -133,7 +113,6 @@ namespace VeinMiner
                             ParticleBehaviour.block_break.Burst(new Vector3((float)current.X, (float)current.Y, (float)current.Z), 8, b);
 
                             // 3. Deliver drops (Only in Singleplayer / Server Host)
-                            // In multiplayer client mode, the server drops loot upon receiving PacketPlayerBreakBlock
                             if (!NetworkManager.IsClient())
                             {
                                 DeliverDropsToPlayer(player, world, b);
@@ -167,7 +146,7 @@ namespace VeinMiner
                     c.preserveForUpgrade = true;
                 }
 
-                // Audio polish: Play break sound and scaled pop sound
+                // Audio polish: Play break sound and pitch-scaled pop sound
                 if (blocksMined > 0)
                 {
                     if (originBlock?.blockMaterial?.breakSound != null)

@@ -12,7 +12,6 @@ namespace VeinMiner
         [HarmonyPrefix]
         public static void Prefix(PlayerEntity __instance, Vector3i blockBreakPosition, World world)
         {
-            // Only execute for the local player when Vein Miner keybind is held
             if (__instance == null || world?.chunkManager == null || !__instance.IsSelf()) return;
             if (!VeinMinerMod.IsVeinMiningActive()) return;
 
@@ -25,11 +24,7 @@ namespace VeinMiner
             Block block = Block.GetBlockFromID(entry.blockID);
             if (VeinMiningLogic.IsVeinMineable(block))
             {
-                // Ensure player tool tier is sufficient for this ore
-                if (VeinMiningLogic.CanPlayerMine(__instance, block))
-                {
-                    VeinMiningLogic.MineVein(__instance, world, blockBreakPosition.X, blockBreakPosition.Y, blockBreakPosition.Z, entry.blockID);
-                }
+                VeinMiningLogic.MineVein(__instance, world, blockBreakPosition.X, blockBreakPosition.Y, blockBreakPosition.Z, entry.blockID);
             }
         }
     }
